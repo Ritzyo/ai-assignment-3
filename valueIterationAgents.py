@@ -198,23 +198,23 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                 curr_value = self.values[curr_state]
                 best_action = self.computeActionFromValues(curr_state)
                 best_q_value = self.computeQValueFromValues(curr_state, best_action)
-                diff =  abs(best_q_value - curr_value)
+                diff = abs(best_q_value - curr_value)
                 errors.push(curr_state, -diff)
         
-        
-        for i in range(self.iterations):
+
+        for _ in range(self.iterations):
             if errors.isEmpty():
                 break
             s = errors.pop()
             best_action = self.computeActionFromValues(s)
             best_q_value = self.computeQValueFromValues(s, best_action)
             self.values[s] = best_q_value
-            for predecessor in predecessors[s]:
-                curr_predecessor_value = self.values[predecessor]
-                best_action = self.computeActionFromValues(predecessor)
-                best_q_value = self.computeQValueFromValues(predecessor, best_action)
-                diff =  abs(best_q_value - curr_predecessor_value)
+            for p in predecessors[s]:
+                curr_value = self.values[p]
+                best_action = self.computeActionFromValues(p)
+                best_q_value = self.computeQValueFromValues(p, best_action)
+                diff = abs(best_q_value - curr_value)
                 if diff > self.theta:
-                    errors.update(predecessor, -diff)
+                    errors.update(p, -diff)
 
 
