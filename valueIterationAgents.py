@@ -179,5 +179,42 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
 
     def runValueIteration(self):
-        "*** YOUR CODE HERE ***"
+        all_states = self.mdp.getStates()
+        predecessors = dict()
+        for curr_state in all_states:
+            possible_actions = self.mdp.getPossibleActions(curr_state)
+            for action in possible_actions:
+                transition_states = self.mdp.getTransitionStatesAndProbs(curr_state, action)
+                for trans_state in transition_states:
+                    current_transition_state = trans_state[0]
+                    if current_transition_state not in predecessors:
+                        predecessors[current_transition_state] = []
+                    if curr_state not in predecessors[current_transition_state]:
+                        predecessors[current_transition_state].append(curr_state)
+
+        errors = util.PriorityQueue()
+        for curr_state in all_states:
+            if (not self.mdp.isTerminal(curr_state)):
+                curr_value = self.values[curr_state]
+                best_action = self.computeActionFromValues(curr_state)
+                best_q_value = self.computeQValueFromValues(curr_state, best_action)
+                diff =  abs(best_q_value - curr_value)
+                errors.push(curr_state, -diff)
+        
+        
+        for i in range(self.iterations):
+            if errors.isEmpty():
+                break
+            s = errors.pop()
+            best_action = self.computeActionFromValues(s)
+            best_q_value = self.computeQValueFromValues(s, best_action)
+            self.values[s] = best_q_value
+            for predecessor in predecessors[s]:
+                curr_predecessor_value = self.values[predecessor]
+                best_action = self.computeActionFromValues(predecessor)
+                best_q_value = self.computeQValueFromValues(predecessor, best_action)
+                diff =  abs(best_q_value - curr_predecessor_value)
+                if diff > self.theta:
+                    errors.update(predecessor, -diff)
+
 
